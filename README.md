@@ -556,17 +556,3 @@ skipped when a run it reads is missing. Tests only read the data and write into 
 `tests/test_docs.py` runs the Python snippets and `shearpic` commands of this README, checks
 the commands of `analysis/README.md` against the scripts' options, and checks that every image
 exists. After changing a physics function, run both commands.
-
----
-
-## 9. Where to go next
-
-| you want to ... | look at |
-|-----------------|---------|
-| make or adapt the paper figures | [`analysis/README.md`](analysis/README.md) |
-| see complete analysis scripts | `examples/quickstart.py`, `examples/parallel_snapshots.py`, `examples/trajectories.py` |
-| know what a function expects | its docstring: `python -m pydoc shearpic.physics.spectra` |
-| know what a history column means | `shearpic.io.history.HST_SCHEMA` |
-| see how a function is used and checked | the matching `tests/test_*.py` |
-| submit an analysis job | `slurm/analysis_node.sh` |
-| remake the images of this README | `python docs/make_images.py` |
