@@ -1,0 +1,12 @@
+# Run registry for the Particle-Accel-in-Rel-Shear project.
+#
+# Ids, hashes and params are written by the CLI, e.g.
+#   shearpic runs new --purpose "..." --template athinput.kh_org
+#   shearpic runs set-status 1 submitted --job-id 1234567
+#   shearpic runs check
+# `purpose`, `notes`, `tags` and `experiments` may be edited by hand.
+# See README.md, section "Run bookkeeping".
+schema_version: 1
+run_dir_format: run{id:04d}
+runs: []
+experiments: {}

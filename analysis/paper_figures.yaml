@@ -1,0 +1,128 @@
+# Presets for Figures 1-7 of "Particle Acceleration in Shear-Driven Turbulence" (arXiv:2512.12720).
+#
+# Every analysis script reads its defaults from here (`--preset NAME`, `--presets FILE`).
+# Copy an entry and change the runs and times to make the same figure for another simulation.
+# Runs are directory names searched under PARTICLE_ACCEL_DATA (or --data-root).
+schema_version: 1
+
+fig1_shear_profile:
+  description: Initial shear profile and x-averaged mean flow during the KHI onset
+  run: run396
+  output: out2
+  # each time selects the nearest snapshot of the stream within max(1e-3 dt, 1e-6 t); a time
+  # between outputs is an error (shear_profile.py --tol widens the tolerance)
+  times: [0, 20, 40, 60, 80, 100]
+  figure: shear_profile
+
+fig2_flow_evolution:
+  description: KHI snapshots (density, |u| with LIC, |B| with LIC)
+  run: run358
+  output: out2
+  times: [40, 80]          # snapshot times, selected as for fig1
+  limits:
+    rho: [0.5, 1.1]
+    umag: [0.0, 5.0]
+    bmag: [0.15, 3.15]
+  cmaps:
+    rho: GnBu
+    umag: RdYlBu_r
+    bmag: magma
+  lic:
+    downsample: 2
+    kernel_length: 64
+    niter: 25
+    alpha: 0.1             # opacity of the LIC texture, blended into one image per panel
+    mode_u: velocity       # rlic uv_mode of the (vel1, vel2) texture
+    mode_b: polarization   # field lines have no direction
+    seed: 0                # white-noise seed
+    shade: true            # LightSource(azdeg=0, altdeg=45).hillshade(vert_exag=5)
+  field_downsample: 2      # block-mean factor of the stored and drawn colour fields
+  panel_width: 2.05        # inches per panel
+  figure: flow_evolution
+
+fig3_turbulence:
+  description: Time-averaged kinetic and magnetic energy spectra E(k) in the steady state
+  run: run364
+  output: out2
+  # snapshots averaged; on HPC, --t-range 200 2400 uses every steady-state snapshot
+  times: [200, 300, 400, 500]
+  fit_range: [3.0, 15.0]   # k range of the power-law fit to the time-averaged E_k + E_m
+  fit_weighting: log       # log: equal weight per log k (weights dk/k); shell: equal weight per linear shell
+  systematic_fit_ranges: [[3.0, 10.0], [3.0, 15.0], [3.0, 20.0], [5.0, 15.0], [5.0, 20.0]]   # x both weightings
+  local_slope_window: 0.5  # decades; printed local slopes d ln E/d ln k (windows step by half of it)
+  max_local_slope_change: 0.5   # warn when the local slopes at the two ends of fit_range differ by more
+  n_per_decade: 8          # log bins per decade for display (merged linear shells of width 2 pi/Lx)
+  ratio_ranges: [[2.0, 30.0], [30.0, 80.0]]   # k ranges of the printed E_m/E_k means per log k
+  xlim: [0.15708, null]    # 2 pi/40 .. k_Nyquist (null)
+  ylim: [1.0e-7, 1.0]      # E(k) [rho0 U0^2 a]; null chooses from the data
+  ratio_ylim: [1.0e-2, 9.9]
+  guide_offset: 4.0        # guide line = guide_offset x best-fit power law
+  figure: turbulence
+
+fig4_steady_state:
+  description: Volume-averaged energy densities, driven vs freely decaying turbulence
+  driven: run364
+  decaying: run370
+  t_max: 600
+  smoothing_period: 16.7   # half-amplitude period [a/U0] of the smoothing spline (lam = 100 at dt = 0.5)
+  ylim_top: [0.001, 0.61]  # null: autoscale (data range + 5%); the fraction of each curve outside is printed
+  ylim_bottom: [0.49, 0.88]
+  ytick_top: 0.1           # major tick spacing; labels get just enough decimals
+  ytick_bottom: 0.05
+  figure: steady_state
+
+fig5_particle_spectrum:
+  description: Evolution of the particle energy distribution (1/N) dN/dgamma
+  run: run364
+  source: legacy           # legacy: energy_spectrum_data/*.csv; npz: products of energy_spectrum.py
+  legacy_dir: energy_spectrum_data
+  variable: gamma          # binning variable of the CSV files, which they do not record
+  xlim: [1, 17]
+  ylim: [1.0e-4, 1.0e2]
+  figure: particle_spectrum
+  # --- energy_spectrum.py (HPC producer of the npz source) and plot_spectrum.py
+  edges: log:1:100:500     # np.logspace(0, 2, 501) in `variable`
+  kind: tab                # run364 writes particle output only as <output4> file_type = tab (dt = 100)
+  # products are named spectrum_<variable>_<basename>.<file_id>.<kind>_NNNNN.npz; with several streams
+  # choose one with plot_spectrum.py --kind/--file-id/--basename
+  plot_variable: gamma     # gamma | p_over_mc | gamma_minus_1 (count-preserving conversion)
+  xlim_p_over_mc: [0.7, 17]
+  xlim_gamma_minus_1: [1.0e-2, 16]
+  style: stairs            # stairs | line (empty bins masked in both)
+  slope_range: [3, 6]      # gamma range of the least-squares index alpha of (1/N) dN/dgamma ~ gamma^-alpha
+  cutoff_level: 1.0e-4     # gamma_cut: (1/N) dN/dgamma first below this level above the peak
+
+fig6_phase_space:
+  description: Single-particle orbit and ensemble phase-space distributions f(p_i, y)
+  histogram:
+    run: run364
+    time: 1200
+    source: legacy         # legacy: phase_space_histograms.npz (density=True, |p/m| <= 150)
+    legacy_file: phase_space_histograms.npz
+    n_total: 67108864      # total particle number, to undo the in-range normalisation of the legacy file
+    kind: tab              # phase_space.py compute: particle output format (product phase_space_<stream>_NNNNN.npz)
+    u_edges: lin:-600:600:240   # bins of u_i = p_i/m, du = 5 U0
+    y_bins: 100
+    xlim: [-3, 3]          # p_i/(m c), legacy source only; the legacy file covers |p_i/m| <= 150 = 3 c for c = 50
+    xlim_auto: visible     # npz products without --xlim-hist: visible = smallest symmetric range beyond which
+                           # every bin is below vmin; range = the full histogram range (+-12 for lin:-600:600)
+    min_particles_per_bin: 10   # vmin of the log grey scale
+    layer_half_width: 10.0 # <u_z> below/above each layer averaged over this distance [a]
+    layer_fit_half_width: 4.0   # d<u_z>/dy fitted within this distance of each layer [a]
+  trajectory:
+    run: run355
+    file: high_energy_particles/trajectory_initmbid_766_pid_30721.tab
+    t_window: [310, 330]
+    xlim: null             # null: symmetric, from the orbit's largest |p_i|/(m c)
+  momentum_unit: mc        # each row is scaled by the speed of light of its own run
+  figure: phase_space
+
+fig7_power:
+  description: Power delivered to the particles (total over the box)
+  run: run364
+  t_steady: [100, 600]
+  smoothing_period: 16.7
+  xlim: [0, 600]
+  ylim: [-1, 4]            # the roll-up dip of dE_p/dt lies below this range; its minimum is printed
+  ratio_threshold: 0.98    # printed: fraction of time with smoothed P_z/(dE_p/dt) below this
+  figure: power

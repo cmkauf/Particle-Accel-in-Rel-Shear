@@ -1,0 +1,31 @@
+# Simulation data and analysis products never go into git
+data/
+outputs/
+*.athdf
+*.xdmf
+*.hst
+*.rst
+*.par.tab
+*.par.bin
+*.tab
+*.npz
+*.mp4
+
+# Lock files of the run registry (created next to runs.yaml by every registry change)
+runs.yaml.lock
+*.lock.excl
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/

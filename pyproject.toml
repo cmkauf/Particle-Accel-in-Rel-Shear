@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shearpic"
+version = "0.1.0"
+description = "Analysis toolkit for MHD-PIC (Athena++) simulations of particle acceleration in shear-driven turbulence"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.23",
+    "scipy>=1.10",
+    "h5py>=3.6",
+    "pandas>=1.5",
+    "matplotlib>=3.6",
+    "ruamel.yaml>=0.17",
+    "joblib>=1.2",
+    "threadpoolctl>=3.1",
+    "tqdm>=4.60",
+]
+
+[project.optional-dependencies]
+mpi = ["mpi4py>=3.1"]
+lic = ["rlic>=0.3"]
+yt = ["yt>=4.1"]
+dev = ["pytest>=7"]
+
+[project.scripts]
+shearpic = "shearpic.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+shearpic = ["plotting/*.mplstyle"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "data: regression tests that need real simulation output (set PARTICLE_ACCEL_TEST_DATA)",
+]
+filterwarnings = [
+    # loky workers exec a new interpreter right after fork, so this Python >= 3.12 warning does not apply
+    "ignore:This process .* is multi-threaded, use of fork\\(\\) may lead to deadlocks:DeprecationWarning",
+]
